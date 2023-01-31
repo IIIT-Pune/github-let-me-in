@@ -6,6 +6,7 @@ import {
   User,
   UserInfo,
   getAuth,
+  getIdToken,
   linkWithPopup,
   signInWithPopup,
   signOut,
@@ -14,15 +15,18 @@ import Head from 'next/head'
 import { useEffect, useState } from 'react'
 import Spinner from '@/components/Spinner'
 import { firebaseConfig, firebaseapp } from '@/utils/Auth'
+import OauthPopup from 'react-oauth-popup'
 
 export default function Home() {
   const [curUser, setCurUser] = useState<User | null>(null)
   const [auth, setAuth] = useState<Auth | null>(null)
   const [providers, setProviders] = useState<UserInfo[] | undefined>([])
+  const [isDiscordLinked, setIsDiscordLinked] = useState(false)
 
   const [loginStates, setLoginStates] = useState({
     google: '',
     github: '',
+    discord: '',
   })
   const [completed, setCompleted] = useState(false)
 
@@ -126,6 +130,7 @@ export default function Home() {
           setLoginStates({
             google: !!user ? 'Connected to ' + user.displayName : '',
             github: !!providers?.[1] ? 'Connected to ' + providers[1].displayName : '',
+            discord: '',
           })
 
           setCompleted(!!providers?.[1])
@@ -134,9 +139,9 @@ export default function Home() {
             ?.getIdTokenResult()
             .then((idTokenResult) => {
               const claims = idTokenResult.claims
-              console.log(claims)
               if (claims.discord_id) {
                 console.log('discord is linked')
+                setIsDiscordLinked(true)
               }
             })
             .catch((error) => {
@@ -149,6 +154,48 @@ export default function Home() {
       })()
     }
   }, [auth, providers])
+
+  const onCode = async (code: string) => {
+    // console.log("code", code);
+    if (!auth?.currentUser) return
+
+    const idToken = await getIdToken(auth?.currentUser)
+
+    fetch('/api/discordauth', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        code,
+        idToken,
+      }),
+    })
+      .then((res) => res.json())
+      .then((res) => {
+        console.log('res', res)
+        curUser
+          ?.getIdTokenResult(true)
+          .then((idTokenResult) => {
+            const claims = idTokenResult.claims
+            console.log(claims)
+            if (claims.discord_id) {
+              console.log('discord linked')
+              setIsDiscordLinked(true)
+            }
+          })
+          .catch((error) => {
+            console.log(error)
+          })
+      })
+      .catch(async (err) => {
+        window.alert(err.message)
+        console.log('err', err)
+      })
+  }
+  const onClose = () => {
+    console.log('pop up closed')
+  }
 
   return (
     <>
@@ -235,6 +282,30 @@ export default function Home() {
               <span>{loginStates.github}</span>
             )}
           </button>
+
+          {/* discord button */}
+          <OauthPopup
+            url={
+              'https://discord.com/api/oauth2/authorize?client_id=' +
+              '909745349307019284' +
+              '&redirect_uri=https%3A%2F%2Fiiitpauth.netlify.app%2F&response_type=code&scope=email%20identify%20guilds.join&state=' +
+              curUser?.uid
+            }
+            onCode={onCode}
+            onClose={onClose}
+            title="Discord Login"
+            width={500}
+            height={500}
+          >
+            <button
+              className={`
+              inline-flex items-center justify-evenly font-semibold leading-6 text-sm shadow rounded-md transition ease-in-out duration-150
+              text-white px-8 py-4 bg-gradient-to-r from-purple-400 to-purple-600 hover:from-purple-500 hover:to-purple-700 disabled:cursor-not-allowed
+            `}
+            >
+              <span>Link your Discord Account</span>
+            </button>
+          </OauthPopup>
 
           {/* log out */}
           {curUser && (
