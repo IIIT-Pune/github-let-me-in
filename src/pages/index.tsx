@@ -1,17 +1,33 @@
-import { auth } from '@/utils/Auth'
 import styles from '@/styles/Home.module.css'
-import { GithubAuthProvider, GoogleAuthProvider, getAuth, linkWithPopup, signInWithPopup } from 'firebase/auth'
+import {
+  Auth,
+  GithubAuthProvider,
+  GoogleAuthProvider,
+  User,
+  UserInfo,
+  getAuth,
+  linkWithPopup,
+  signInWithPopup,
+  signOut,
+} from 'firebase/auth'
 import Head from 'next/head'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import Spinner from '@/components/Spinner'
+import { firebaseConfig, firebaseapp } from '@/utils/Auth'
 
 export default function Home() {
+  const [curUser, setCurUser] = useState<User | null>(null)
+  const [auth, setAuth] = useState<Auth | null>(null)
+  const [providers, setProviders] = useState<UserInfo[] | undefined>([])
+
   const [loginStates, setLoginStates] = useState({
     google: '',
     github: '',
   })
-  const [confetti, setConfetti] = useState(false)
+  const [completed, setCompleted] = useState(false)
 
   const handleGoogleLogin = () => {
+    if (!auth) return
     setLoginStates({
       ...loginStates,
       google: 'loading',
@@ -27,7 +43,7 @@ export default function Home() {
           ...loginStates,
           google: `Connected to ${user.displayName}` ?? '',
         })
-        setConfetti(true)
+        // setConfetti(true)
       })
       .catch((error) => {
         console.log(error)
@@ -39,7 +55,9 @@ export default function Home() {
   }
 
   const handleGithubLink = () => {
-    setConfetti(false)
+    if (!auth) return
+
+    // setConfetti(false)
     setLoginStates({
       ...loginStates,
       github: 'loading',
@@ -79,7 +97,8 @@ export default function Home() {
             console.error('error generating token')
           })
 
-        setConfetti(true)
+        // setConfetti(true)
+        setCompleted(true)
       })
       .catch((error) => {
         console.log(error)
@@ -89,6 +108,45 @@ export default function Home() {
         })
       })
   }
+
+  useEffect(() => {
+    ;(async () => {
+      const auth = getAuth(firebaseapp)
+      setAuth(auth)
+    })()
+  }, [])
+  useEffect(() => {
+    if (auth) {
+      ;(async () => {
+        const { onAuthStateChanged } = await import('firebase/auth')
+        onAuthStateChanged(auth, (user) => {
+          setCurUser(user)
+          setProviders(user?.providerData)
+
+          setLoginStates({
+            google: !!user ? 'Connected to ' + user.displayName : '',
+            github: !!providers?.[1] ? 'Connected to ' + providers[1].displayName : '',
+          })
+
+          user
+            ?.getIdTokenResult()
+            .then((idTokenResult) => {
+              const claims = idTokenResult.claims
+              console.log(claims)
+              if (claims.discord_id) {
+                console.log('discord is linked')
+              }
+            })
+            .catch((error) => {
+              console.log(error)
+            })
+
+          if (user) console.log('User Signed In')
+          else console.log('User Signed out')
+        })
+      })()
+    }
+  }, [auth, providers])
 
   return (
     <>
@@ -134,7 +192,7 @@ export default function Home() {
             onClick={() => {
               handleGoogleLogin()
             }}
-            disabled={loginStates.google !== ''}
+            disabled={!!curUser}
           >
             {loginStates.google === 'loading' ? (
               <>
@@ -155,7 +213,7 @@ export default function Home() {
             onClick={() => {
               handleGithubLink()
             }}
-            disabled={loginStates.github !== ''}
+            disabled={!!providers?.[1]}
           >
             {loginStates.github === 'loading' ? (
               <>
@@ -168,31 +226,38 @@ export default function Home() {
               <span>{loginStates.github}</span>
             )}
           </button>
+
+          {completed && (
+            <div className="flex flex-col gap-4">
+              <p className="text-center text-gray-500">
+                You&apos;re all set! You can now contribute to IIIT Pune Org.
+                <br />
+                You can now close this tab.
+              </p>
+            </div>
+          )}
+
+          {/* log out */}
+          {curUser && (
+            <button
+              className="text-red-500 underline"
+              onClick={() => {
+                if (auth) {
+                  signOut(auth)
+                    .then(() => {
+                      console.log('signed out')
+                    })
+                    .catch((error) => {
+                      console.log(error)
+                    })
+                }
+              }}
+            >
+              Log Out
+            </button>
+          )}
         </div>
       </main>
     </>
   )
 }
-
-const Spinner = () => (
-  <svg
-    className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
-    xmlns="http://www.w3.org/2000/svg"
-    fill="none"
-    viewBox="0 0 24 24"
-  >
-    <circle
-      className="opacity-25"
-      cx="12"
-      cy="12"
-      r="10"
-      stroke="currentColor"
-      strokeWidth="4"
-    ></circle>
-    <path
-      className="opacity-75"
-      fill="currentColor"
-      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-    ></path>
-  </svg>
-)

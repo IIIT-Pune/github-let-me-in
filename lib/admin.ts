@@ -1,19 +1,22 @@
-import { app, initializeApp } from 'firebase-admin'
-import { applicationDefault } from 'firebase-admin/app'
 import { Auth } from 'firebase-admin/lib/auth/auth'
+import * as admin from 'firebase-admin'
 
-export const GOOGLE_APPLICATION_CREDENTIALS = JSON.parse(process.env.GOOGLE_APPLICATION_CREDENTIALS ?? '')
+let creds = JSON.parse(process.env.GOOGLE_APPLICATION_CREDENTIALS ?? '')
+export const GOOGLE_APPLICATION_CREDENTIALS = {
+  ...creds,
+  private_key: creds.private_key.replace(/\\n/g, '\n'),
+}
 
-let admin: app.App | null = null,
+let adminInstance: admin.app.App | null = null,
   auth: Auth
 
 try {
-  admin = initializeApp({
-    credential: applicationDefault(),
+  adminInstance = admin.initializeApp({
+    credential: admin.credential.cert(GOOGLE_APPLICATION_CREDENTIALS),
     projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
   })
 
-  auth = admin.auth()
+  auth = adminInstance.auth()
 } catch (error) {
   //   @ts-ignore
   if (!/already exists/u.test(error.message)) {
@@ -22,5 +25,5 @@ try {
   }
 }
 
-export default admin
+export default adminInstance
 export { auth }

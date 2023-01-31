@@ -1,4 +1,4 @@
-import admin, { auth } from 'lib/admin'
+import { auth } from 'lib/admin'
 import type { NextApiRequest, NextApiResponse } from 'next'
 
 type Data = {
@@ -13,12 +13,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
   // now invite user to github organization
   const GITHUB_API_TOKEN = process.env.GITHUB_API_TOKEN
 
-  if (!admin) {
+  if (!auth) {
+    console.error('Firebase admin not initialized')
     return res.status(500).json({ error: 'Firebase admin not initialized' })
   }
   try {
-    await admin.auth().verifyIdToken(token)
+    await auth.verifyIdToken(token)
   } catch (err) {
+    console.error(err)
     return res.status(401).json({ error: 'Unauthorized' })
   }
 
@@ -37,9 +39,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
       email: githubEmail,
       role: 'direct_member',
     }),
+  }).catch((err) => {
+    console.error(err)
+    return res.status(500).json({ error: err })
   })
 
-  if (response.status === 201) {
+  if (response?.status === 201) {
     return res.status(200).json({ success: true })
   }
 
