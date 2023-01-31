@@ -1,0 +1,16 @@
+module.exports = {
+  tailwindConfig: './tailwind.config.js',
+  endOfLine: 'lf',
+  printWidth: 120,
+  useTabs: false,
+  tabWidth: 2,
+  singleQuote: true,
+  semi: false,
+  htmlWhitespaceSensitivity: 'css',
+  jsxSingleQuote: false,
+  singleAttributePerLine: true,
+  trailingComma: 'es5',
+  bracketSpacing: true,
+  arrowParens: 'always',
+  bracketLine: false,
+}
