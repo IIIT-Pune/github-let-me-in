@@ -128,6 +128,8 @@ export default function Home() {
             github: !!providers?.[1] ? 'Connected to ' + providers[1].displayName : '',
           })
 
+          setCompleted(!!providers?.[1])
+
           user
             ?.getIdTokenResult()
             .then((idTokenResult) => {
@@ -167,6 +169,13 @@ export default function Home() {
       </Head>
 
       <main className={styles.main}>
+        {/* connected banner */}
+        {completed && (
+          <div className="fixed top-0 left-0 w-full text-sm bg-green-300 text-green-800 z-50 flex flex-col justify-center items-center">
+            <div className="flex flex-col p-1">You&apos;re in! Check your email for the invite</div>
+          </div>
+        )}
+
         {/* header */}
         <div className="flex w-full">
           <div className={styles.description}>
@@ -177,7 +186,7 @@ export default function Home() {
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                By 0xJayesh
+                with &#128150; by 0xJayesh
               </a>
             </div>
           </div>
@@ -227,20 +236,10 @@ export default function Home() {
             )}
           </button>
 
-          {completed && (
-            <div className="flex flex-col gap-4">
-              <p className="text-center text-gray-500">
-                You&apos;re all set! You can now contribute to IIIT Pune Org.
-                <br />
-                You can now close this tab.
-              </p>
-            </div>
-          )}
-
           {/* log out */}
           {curUser && (
             <button
-              className="text-red-500 underline"
+              className="text-xs text-red-500 underline"
               onClick={() => {
                 if (auth) {
                   signOut(auth)
