@@ -21,9 +21,6 @@ export default function Home() {
 
     signInWithPopup(auth, provider)
       .then((result) => {
-        // This gives you a Google Access Token. You can use it to access the Google API.
-        const credential = GoogleAuthProvider.credentialFromResult(result)
-        const token = credential?.accessToken
         const user = result.user
 
         setLoginStates({
@@ -62,6 +59,26 @@ export default function Home() {
           ...loginStates,
           github: `Connected to ${user.displayName}` ?? '',
         })
+
+        user
+          .getIdToken(/* forceRefresh */ true)
+          .then(function (idToken) {
+            // post github email id to api. /invite endpoint
+            fetch('/api/invite', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                email: user.email,
+                token: idToken,
+              }),
+            })
+          })
+          .catch(function (error) {
+            console.error('error generating token')
+          })
+
         setConfetti(true)
       })
       .catch((error) => {
