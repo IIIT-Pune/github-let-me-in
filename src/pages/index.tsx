@@ -63,7 +63,6 @@ export default function Home() {
           ...loginStates,
           google: `Connected to ${user.displayName}` ?? '',
         })
-        // setConfetti(true)
       })
       .catch((error) => {
         console.log(error)
@@ -93,6 +92,9 @@ export default function Home() {
         //   ...loginStates,
         //   github: `Connected to ${user.displayName}` ?? '',
         // })
+        const auth = getAuth(firebaseapp)
+        setCurUser(user)
+        setAuth(auth)
 
         user
           .getIdToken(/* forceRefresh */ true)
@@ -107,15 +109,14 @@ export default function Home() {
                 email: user.email,
                 token: idToken,
               }),
+            }).catch((error) => {
+              console.log(error)
             })
           })
           .catch(function (error) {
             console.error('error generating token')
           })
 
-        const auth = getAuth(firebaseapp)
-        setAuth(auth)
-        // setConfetti(true)
         setCompleted(true)
       })
       .catch((error) => {
