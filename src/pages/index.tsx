@@ -11,22 +11,42 @@ import {
   signOut,
 } from 'firebase/auth'
 import Head from 'next/head'
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import Spinner from '@/components/Spinner'
-import { firebaseConfig, firebaseapp } from '@/utils/Auth'
+import { firebaseapp } from '@/utils/Auth'
 
 export default function Home() {
   const [curUser, setCurUser] = useState<User | null>(null)
   const [auth, setAuth] = useState<Auth | null>(null)
   const [providers, setProviders] = useState<UserInfo[] | undefined>([])
-
   const [loginStates, setLoginStates] = useState({
     google: '',
     github: '',
   })
   const [completed, setCompleted] = useState(false)
 
-  const handleGoogleLogin = () => {
+  const handleInviteRequest = () => {
+    curUser
+      ?.getIdToken(/* forceRefresh */ true)
+      .then(function (idToken) {
+        // post github email id to api. /invite endpoint
+        fetch('/api/invite', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            email: curUser.email,
+            token: idToken,
+          }),
+        })
+      })
+      .catch(function (error) {
+        console.error('error generating token', error)
+      })
+  }
+
+  const handleGoogleLogin = useCallback(() => {
     if (!auth) return
     setLoginStates({
       ...loginStates,
@@ -47,14 +67,10 @@ export default function Home() {
       })
       .catch((error) => {
         console.log(error)
-        setLoginStates({
-          ...loginStates,
-          google: '',
-        })
       })
-  }
+  }, [auth, loginStates])
 
-  const handleGithubLink = () => {
+  const handleGithubLink = useCallback(() => {
     if (!auth) return
 
     // setConfetti(false)
@@ -102,12 +118,8 @@ export default function Home() {
       })
       .catch((error) => {
         console.log(error)
-        setLoginStates({
-          ...loginStates,
-          google: '',
-        })
       })
-  }
+  }, [auth, loginStates])
 
   useEffect(() => {
     ;(async () => {
@@ -235,6 +247,20 @@ export default function Home() {
               <span>{loginStates.github}</span>
             )}
           </button>
+
+          {/* request invite button */}
+          {
+            <button
+              className={`flex-col items-center justify-evenly font-semibold leading-6 text-sm shadow rounded-md transition ease-in-out duration-150
+              hover:text-blue-500 disabled:cursor-not-allowed px-8 py-4 bg-black border-blue-500 border !hidden`}
+              disabled={!providers?.[1]}
+              onClick={handleInviteRequest}
+            >
+              Request Invite
+              <br />
+              <span className="font-mono text-[0.625rem] font-normal">only use if you do not receive one.</span>
+            </button>
+          }
 
           {/* log out */}
           {curUser && (
