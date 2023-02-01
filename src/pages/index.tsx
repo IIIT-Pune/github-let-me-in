@@ -95,15 +95,25 @@ export default function Home() {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        email: user.email,
+        email: user?.email,
         token: idToken,
       }),
     })
       .then(() => {
         setCompleted(true)
+        setLoginStates({
+          ...loginStates,
+          github: `Connected to ${user?.displayName}` ?? '',
+        })
       })
       .catch((error) => {
         console.log(error)
+        window.alert('Something went wrong. Please contact the admin.')
+
+        setLoginStates({
+          ...loginStates,
+          github: '',
+        })
       })
   }, [auth, loginStates])
 
@@ -195,7 +205,7 @@ export default function Home() {
           {/* google login */}
           <button
             className={`inline-flex items-center justify-evenly font-semibold leading-6 text-sm shadow rounded-md transition ease-in-out duration-150
-              text-white px-8 py-4 bg-gradient-to-r from-blue-400 to-blue-600 hover:from-blue-500 hover:to-blue-700 disabled:cursor-not-allowed`}
+              text-white px-8 py-4 bg-gradient-to-r from-blue-400 to-blue-600 hover:from-blue-500 hover:to-blue-700 disabled:cursor-not-allowed disabled:opacity-60`}
             onClick={() => {
               handleGoogleLogin()
             }}
@@ -216,11 +226,11 @@ export default function Home() {
           {/* github login */}
           <button
             className={`inline-flex items-center justify-evenly font-semibold leading-6 text-sm shadow rounded-md transition ease-in-out duration-150
-              text-white px-8 py-4 bg-gradient-to-r from-gray-400 to-gray-600 hover:from-gray-500 hover:to-gray-700 disabled:cursor-not-allowed`}
+              text-white px-8 py-4 bg-gradient-to-r from-gray-400 to-gray-600 hover:from-gray-500 hover:to-gray-700 disabled:cursor-not-allowed disabled:opacity-60`}
             onClick={() => {
               handleGithubLink()
             }}
-            disabled={!!providers?.[1]}
+            disabled={!!providers?.[1] || !curUser}
           >
             {loginStates.github === 'loading' ? (
               <>

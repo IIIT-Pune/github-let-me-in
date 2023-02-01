@@ -34,8 +34,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
       headers: {
         Authorization: `Bearer ${GITHUB_API_TOKEN}`,
         'X-GitHub-Api-Version': '2022-11-28',
-        'Content-Type': 'application/json',
         Accept: 'application/vnd.github+json',
+        // cors headers
+        'Access-Control-Allow-Origin': '*',
       },
       body: JSON.stringify({
         email: githubEmail,
