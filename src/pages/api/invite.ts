@@ -41,12 +41,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
         email: githubEmail,
         role: 'direct_member',
       }),
-    }).catch((err) => {
-      console.error(err)
-      return res.status(500).json({ error: err })
     })
 
     if (response?.status === 201) {
+      console.log('Invitation sent', githubEmail)
       return res.status(200).json({ success: true })
     }
 
