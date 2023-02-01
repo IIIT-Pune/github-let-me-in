@@ -5,7 +5,7 @@ let creds = JSON.parse(process.env.SERVICE_ACCOUNT as string)
 
 const serviceAccount = {
   ...creds,
-  // private_key: creds.private_key.replace(/\\n/g, '\n'),
+  private_key: creds.private_key.replace(/\\n/g, '\n'),
 }
 
 if (admin.apps.length === 0) {
