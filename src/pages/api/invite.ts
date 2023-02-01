@@ -49,6 +49,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
       return res.status(200).json({ success: true })
     }
 
+    console.error('Something went wrong', githubEmail, response?.statusText, response?.status, response?.body)
     return res.status(500).json({ error: 'Something went wrong' })
   } catch (err) {
     console.error(err)
