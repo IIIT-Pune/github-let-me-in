@@ -8,7 +8,7 @@ export const GOOGLE_APPLICATION_CREDENTIALS = {
 }
 
 let adminInstance: admin.app.App | null = null,
-  auth: Auth
+  auth: Auth | null = null
 
 try {
   adminInstance = admin.initializeApp({
@@ -23,6 +23,10 @@ try {
     //   @ts-ignore
     console.error('Firebase admin initialization error', error.stack)
   }
+}
+
+if (!adminInstance || !auth) {
+  console.error('Firebase admin/auth init error.', !!adminInstance, !!auth)
 }
 
 export default adminInstance

@@ -1,4 +1,4 @@
-import { auth } from 'lib/admin'
+import adminInstance, { auth } from 'lib/admin'
 import type { NextApiRequest, NextApiResponse } from 'next'
 
 type Data = {
