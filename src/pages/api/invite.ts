@@ -4,6 +4,7 @@ import type { NextApiRequest, NextApiResponse } from 'next'
 type Data = {
   success?: boolean
   error?: unknown
+  response?: unknown
 }
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse<Data>) {
@@ -50,7 +51,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
     }
 
     console.error('Something went wrong', githubEmail, response?.statusText, response?.status, response?.body)
-    return res.status(500).json({ error: 'Something went wrong' })
+    return res.status(500).json({ error: 'Something went wrong', response: response })
   } catch (err) {
     console.error(err)
     return res.status(500).json({ error: err ?? '' })
