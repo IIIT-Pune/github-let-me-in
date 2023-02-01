@@ -1,7 +1,7 @@
 import { Auth } from 'firebase-admin/lib/auth/auth'
 import * as admin from 'firebase-admin'
 
-let creds = JSON.parse(process.env.GOOGLE_APPLICATION_CREDENTIALS ?? '')
+let creds = JSON.parse(process.env.SERVICE_ACCOUNT ?? '{}')
 export const GOOGLE_APPLICATION_CREDENTIALS = {
   ...creds,
   private_key: creds.private_key.replace(/\\n/g, '\n'),

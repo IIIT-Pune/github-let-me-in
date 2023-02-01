@@ -89,10 +89,10 @@ export default function Home() {
         const credential = GoogleAuthProvider.credentialFromResult(result)
         const user = result.user
 
-        setLoginStates({
-          ...loginStates,
-          github: `Connected to ${user.displayName}` ?? '',
-        })
+        // setLoginStates({
+        //   ...loginStates,
+        //   github: `Connected to ${user.displayName}` ?? '',
+        // })
 
         user
           .getIdToken(/* forceRefresh */ true)
@@ -113,6 +113,8 @@ export default function Home() {
             console.error('error generating token')
           })
 
+        const auth = getAuth(firebaseapp)
+        setAuth(auth)
         // setConfetti(true)
         setCompleted(true)
       })
@@ -137,10 +139,10 @@ export default function Home() {
 
           setLoginStates({
             google: !!user ? 'Connected to ' + user.displayName : '',
-            github: !!providers?.[1] ? 'Connected to ' + providers[1].displayName : '',
+            github: !!user?.providerData?.[1] ? 'Connected to ' + user?.providerData[1].displayName : '',
           })
 
-          setCompleted(!!providers?.[1])
+          setCompleted(!!user?.providerData?.[1])
 
           user
             ?.getIdTokenResult()
@@ -160,7 +162,7 @@ export default function Home() {
         })
       })()
     }
-  }, [auth, providers])
+  }, [auth])
 
   return (
     <>
