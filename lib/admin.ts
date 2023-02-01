@@ -12,14 +12,10 @@ let adminInstance: admin.app.App | null = null,
   auth: Auth | null = null
 
 try {
-  if (admin.apps.length === 0) {
-    adminInstance = admin.initializeApp({
-      credential: admin.credential.cert(serviceAccount),
-      projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-    })
-  } else {
-    adminInstance = admin.app()
-  }
+  adminInstance = admin.initializeApp({
+    credential: admin.credential.cert(serviceAccount),
+    projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+  })
 
   auth = adminInstance.auth()
 } catch (error) {
