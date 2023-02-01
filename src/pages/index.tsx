@@ -69,54 +69,37 @@ export default function Home() {
       })
   }, [auth, loginStates])
 
-  const handleGithubLink = useCallback(() => {
+  const handleGithubLink = useCallback(async () => {
     if (!auth) return
+    if (!auth.currentUser) return
 
-    // setConfetti(false)
     setLoginStates({
       ...loginStates,
       github: 'loading',
     })
 
     const githubProvider = new GithubAuthProvider()
+    const linkRes = await linkWithPopup(auth.currentUser, githubProvider)
+    // Accounts successfully linked.
+    // const credential = GoogleAuthProvider.credentialFromResult(linkRes)
+    const user = linkRes.user
 
-    if (!auth.currentUser) return
+    const _auth = getAuth(firebaseapp)
+    setCurUser(user)
+    setAuth(_auth)
+    const idToken = await user.getIdToken(/* forceRefresh */ true)
 
-    linkWithPopup(auth.currentUser, githubProvider)
-      .then((result) => {
-        // Accounts successfully linked.
-        const credential = GoogleAuthProvider.credentialFromResult(result)
-        const user = result.user
-
-        // setLoginStates({
-        //   ...loginStates,
-        //   github: `Connected to ${user.displayName}` ?? '',
-        // })
-        const auth = getAuth(firebaseapp)
-        setCurUser(user)
-        setAuth(auth)
-
-        user
-          .getIdToken(/* forceRefresh */ true)
-          .then(function (idToken) {
-            // post github email id to api. /invite endpoint
-            fetch('/api/invite', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({
-                email: user.email,
-                token: idToken,
-              }),
-            }).catch((error) => {
-              console.log(error)
-            })
-          })
-          .catch(function (error) {
-            console.error('error generating token')
-          })
-
+    await fetch('/api/invite', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        email: user.email,
+        token: idToken,
+      }),
+    })
+      .then(() => {
         setCompleted(true)
       })
       .catch((error) => {
