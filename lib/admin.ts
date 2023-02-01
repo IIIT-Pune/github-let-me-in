@@ -1,7 +1,7 @@
 import { Auth } from 'firebase-admin/lib/auth/auth'
 import * as admin from 'firebase-admin'
 
-let creds = JSON.parse((process.env.SERVICE_ACCOUNT_1 as string) ?? '{}')
+let creds = JSON.parse(process.env.SERVICE_ACCOUNT as string)
 
 const serviceAccount = {
   ...creds,
