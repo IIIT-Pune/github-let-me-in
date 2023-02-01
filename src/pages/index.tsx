@@ -252,7 +252,7 @@ export default function Home() {
           {
             <button
               className={`flex-col items-center justify-evenly font-semibold leading-6 text-sm shadow rounded-md transition ease-in-out duration-150
-              hover:text-blue-500 disabled:cursor-not-allowed px-8 py-4 bg-black border-blue-500 border !hidden`}
+              hover:text-blue-500 disabled:cursor-not-allowed px-8 py-4 bg-black border-blue-500 border hidden`}
               disabled={!providers?.[1]}
               onClick={handleInviteRequest}
             >
